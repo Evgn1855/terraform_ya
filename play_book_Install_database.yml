@@ -1,0 +1,43 @@
+---
+- name: mysql
+  gather_facts: false
+  hosts: webservers
+  vars:
+    ansible_ssh_user: user
+    mysql_db: "my_database"
+    mysql_user: "db_user"
+    mysql_password: "secure_password123"
+  become: yes
+
+  tasks:
+    - name: Обновить кэш пакетов apt
+      apt:
+        update_cache: yes
+        cache_valid_time: 3600
+
+    - name: Установить пакеты MySQL
+      apt:
+        name:
+          - mysql-server
+          - python3-pymysql
+        state: present
+
+    - name: Запустить и включить службу MySQL
+      service:
+        name: mysql
+        state: started
+        enabled: yes
+
+    - name: Создать базу данных
+      mysql_db:
+        name: "{{ mysql_db }}"
+        state: present
+        login_unix_socket: /var/run/mysqld/mysqld.sock
+
+    - name: Создать пользователя базы данных и дать права
+      mysql_user:
+        name: "{{ mysql_user }}"
+        password: "{{ mysql_password }}"
+        priv: "{{ mysql_db }}.*:ALL"
+        state: present
+        login_unix_socket: /var/run/mysqld/mysqld.sock

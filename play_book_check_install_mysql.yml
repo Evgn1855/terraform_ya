@@ -1,0 +1,15 @@
+---
+- name: Checking mysql
+  gather_facts: false
+  hosts: webservers
+  vars:
+    ansible_ssh_user: user
+  become: yes
+
+  tasks:
+    - name: Собрать факты о службах системы
+      ansible.builtin.service_facts:
+
+    - name: Показать состояние службы MySQL
+      ansible.builtin.debug:
+        msg: "Служба MySQL находится в состоянии: {{ ansible_facts.services['mysql.service'].state }}"
